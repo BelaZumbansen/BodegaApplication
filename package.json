@@ -6,20 +6,19 @@
   "scripts": {
     "start:dev": "npx nodemon",
     "start": "npm run build && node build/index.js",
-    "build": "rimraf ./build && tsc",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "rimraf ./build && tsc"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/BelaZumbansen/ZumboTrader.git"
+    "url": "git+https://github.com/BelaZumbansen/BodegaApplication.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/BelaZumbansen/ZumboTrader/issues"
+    "url": "https://github.com/BelaZumbansen/BodegaApplication/issues"
   },
-  "homepage": "https://github.com/BelaZumbansen/ZumboTrader#readme",
+  "homepage": "https://github.com/BelaZumbansen/BodegaApplication#readme",
   "dependencies": {
     "axios": "^1.2.2",
     "bcrypt": "^5.1.0",
