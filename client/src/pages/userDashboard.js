@@ -9,14 +9,15 @@ export const UserDashboard = () => {
   
   if (!localStorage.getItem('userEmail')) {
     localStorage.clear();
-    navigate('/home');
-  } 
+    navigate('/login');
+  }
+
+  const token = getTokenFromCookies();
   
   const userName = localStorage.getItem('userName');
   const userEmail = localStorage.getItem('userEmail');
   const userDateOfBirth = new Date(Date.parse(localStorage.getItem('dateOfBirth')));
   
-
   function handleLogoutRequest(event) {
     event.preventDefault();
     
