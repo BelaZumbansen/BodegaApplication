@@ -6,8 +6,6 @@ import { signJwt } from '../utils/auth/jwt'
 const config = require('../config');
 
 export interface CreateUserCredentials {
-  name: string,
-  dateOfBirth: Date,
   email: string,
   password: string
 }
@@ -22,15 +20,12 @@ export const createUser = async (input : CreateUserCredentials) => {
   const existingUser = await UserModel.findOne({email: input.email});
 
   if (existingUser) {
-    // TODO send appropriate error
     return null;
   }
 
   const hashVal = await password_service.hashPassword(input.password);
   
   const userDoc = new UserModel({
-    name: input.name,
-    dateOfBirth: input.dateOfBirth,
     email: input.email,
     password: hashVal
   });

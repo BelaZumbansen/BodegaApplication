@@ -42,8 +42,6 @@ export function LoginPage() {
         setError(false);
         const user = response.data.user;
         localStorage.setItem('userEmail', user.email);
-        localStorage.setItem('userName', user.name);
-        localStorage.setItem('dateOfBirth', user.dateOfBirth);
         navigate('/home');
       } else {
         setError(true);

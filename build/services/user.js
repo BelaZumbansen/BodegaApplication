@@ -45,8 +45,6 @@ const createUser = (input) => __awaiter(void 0, void 0, void 0, function* () {
     }
     const hashVal = yield password_service.hashPassword(input.password);
     const userDoc = new user_1.UserModel({
-        name: input.name,
-        dateOfBirth: input.dateOfBirth,
         email: input.email,
         password: hashVal
     });

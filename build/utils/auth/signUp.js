@@ -20,8 +20,6 @@ const registerHandler = (req, res, next) => __awaiter(void 0, void 0, void 0, fu
     try {
         // Parse Request Payload
         const createCredentials = {
-            name: req.body.name,
-            dateOfBirth: req.body.dateOfBirth,
             email: req.body.email,
             password: req.body.password,
         };

@@ -12,8 +12,6 @@ export const registerHandler = async (
 
       // Parse Request Payload
       const createCredentials : CreateUserCredentials = {
-        name: req.body.name,
-        dateOfBirth: req.body.dateOfBirth,
         email: req.body.email,
         password: req.body.password,
       };

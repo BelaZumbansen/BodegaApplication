@@ -11,12 +11,8 @@ export const UserDashboard = () => {
     localStorage.clear();
     navigate('/login');
   }
-
-  const token = getTokenFromCookies();
   
-  const userName = localStorage.getItem('userName');
   const userEmail = localStorage.getItem('userEmail');
-  const userDateOfBirth = new Date(Date.parse(localStorage.getItem('dateOfBirth')));
   
   function handleLogoutRequest(event) {
     event.preventDefault();
@@ -39,14 +35,6 @@ export const UserDashboard = () => {
   return (
     <div className='homeDisplay'>
       <h1>User Logged In.</h1>
-      <div className="row">
-        <div>
-          <h6 className="fieldDescription">Full Name</h6>
-        </div>
-        <div className="fieldValue">
-          {userName}
-        </div>
-      </div>
       <hr/>
       <div className="row">
         <div>
@@ -54,15 +42,6 @@ export const UserDashboard = () => {
         </div>
         <div className="fieldValue">
           {userEmail}
-        </div>
-      </div>
-      <hr/>
-      <div className="row">
-        <div>
-          <h6 className="fieldDescription">Date Of Birth</h6>
-        </div>
-        <div className="fieldValue">
-          {userDateOfBirth.toLocaleDateString()}
         </div>
       </div>
       <hr/>

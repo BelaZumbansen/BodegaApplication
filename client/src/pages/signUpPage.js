@@ -6,8 +6,6 @@ import '../styles/signUp.css'
 export function SignUpPage() {
 
   const navigate = useNavigate();
-  const [name, setName] = useState('');
-  const [dateOfBirth, setDateOfBirth] = useState('');
   const [email, setEmail] = useState('');
   const [confirmEmail, setConfirmEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -34,8 +32,6 @@ export function SignUpPage() {
     event.preventDefault();
 
     axios.post('/api/auth/signUp', {
-      name: name,
-      dateOfBirth: dateOfBirth,
       email: email,
       password: password
     },
@@ -47,9 +43,7 @@ export function SignUpPage() {
       if (response.status === 200) {
         setError(false)
         const user = response.data.user;
-        localStorage.setItem('userEmail', user.email);
         localStorage.setItem('userName', user.name);
-        localStorage.setItem('dateOfBirth', user.dateOfBirth);
         navigate('/home');
       } else {
         setError(true);
@@ -66,25 +60,6 @@ export function SignUpPage() {
         <h1>Create Account</h1>
         <div className='errorBox' style={{display: error ? 'block' : 'none'}}>
           <p>User with this email already exists.</p>
-        </div>
-        <div>
-          Full Name
-          <input
-          type="text"
-          value={name}
-          name="Name"
-          className='signInCredential'
-          placeholder='Full Name'
-          onChange={({ target }) => setName(target.value)}
-          />
-        </div>
-        <div>
-          Date Of Birth
-          <input 
-          type="date" 
-          value={dateOfBirth}
-          className='signInCredential'
-          onChange={({ target }) => setDateOfBirth(target.value)}/>
         </div>
         <div>
           Email
