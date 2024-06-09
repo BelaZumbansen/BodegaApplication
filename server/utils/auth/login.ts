@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express'
-import { LoginCredentials, findUser, signToken } from '../../services/user'
+import { LoginInput, signToken, findUserByEmail } from '../../services/user'
 import { comparePassword } from '../../services/password';
 import AppError from '../../services/appError'
 
@@ -26,13 +26,13 @@ export const loginHandler = async (
     const email = req.body.email;
     const password = req.body.password;
 
-    const user = await findUser(email);
+    const user = await findUserByEmail(email);
+    if (!user) {
+      return next(new AppError('Invalid email. No user found.', 400));
+    }
 
     // Check credentials
-    if (
-      !user ||
-      !(await comparePassword(password, user.hashPass))
-      ) {
+    if (!(await comparePassword(password, user.hashPass))) {
         return next(new AppError('Invalid email or password', 401));
     }
 
@@ -46,7 +46,8 @@ export const loginHandler = async (
     .cookie('refreshToken', refreshToken, { httpOnly: true })
     .json({ user: user }); 
   } catch (err : any) {
-    next(err);
+    console.log(`RegisterHandler::${err.message}`);
+    next(new AppError('Unexpected error while logging in user.', 500));
   }
 }
 

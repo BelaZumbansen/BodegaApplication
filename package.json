@@ -30,6 +30,7 @@
     "joi": "^17.7.0",
     "jsonwebtoken": "^9.0.0",
     "mongoose": "^6.8.3",
+    "nanoid": "^5.0.7",
     "passport-google-oauth20": "^2.0.0",
     "rimraf": "^4.0.5"
   },
