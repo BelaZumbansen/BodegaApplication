@@ -1,4 +1,4 @@
-export default class AppError extends Error {
+export class AppError extends Error {
   status: string;
   isOperational: boolean;
 
@@ -9,4 +9,15 @@ export default class AppError extends Error {
 
     Error.captureStackTrace(this, this.constructor);
   }
+}
+
+export interface UserRequestError {
+  appError: string,
+  internalError: string,
+  errorCode: number
+}
+
+export interface InternalRequestError {
+  message: string,
+  thrownError: Error
 }

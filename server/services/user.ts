@@ -1,16 +1,22 @@
 import bcrypt from 'bcrypt'
 import { model, Schema, Model, Document } from 'mongoose'
 import { UserModel, User, IUser } from '../models/user'
+import { TokenModel, IToken } from '../models/token'
 import * as passwordService from './password'
 import { signJwt } from '../utils/auth/jwt'
+import { randomBytes } from 'crypto'
+import { random } from 'nanoid'
+import { hash } from 'bcrypt'
+import { UserRequestError, InternalRequestError } from './appError'
+import { sendEmail } from './email'
 const config = require('../config');
 
 const UNEXPECTED_SERVER_ERROR : string = 'Unexpected server error encountered';
 
-export interface Error {
-  appError: string,
-  internalError: string,
-  errorCode: number
+export interface ResetPasswordInput {
+  userId: string,
+  token: string,
+  newPassword: string,
 }
 
 export interface CreateUserInput {
@@ -39,7 +45,79 @@ export interface UpdatePasswordInput {
   newPassword: string
 }
 
-export const updateUserPassword = async (input : UpdatePasswordInput) : Promise<User | Error> => {
+export const requestPasswordResetToken = async (email : string) : Promise<void | UserRequestError> => {
+
+  const user = await findUserByEmail(email);
+  if (!user) {
+    return {
+      appError: "Could not find a user associated with this email.",
+      internalError: "RequestPasswordResetToken::EmailNotAssociatedWithUser",
+      errorCode: 400
+    };
+  }
+
+  let token = await TokenModel.findOne({ userId: user.userId });
+  if (token) {
+    await token.deleteOne();
+  };
+
+  let resetToken = randomBytes(32).toString("hex");
+  
+  const hashedToken = await hash(resetToken, Number(10));
+  await new TokenModel({
+    userId: user.userId,
+    token: hashedToken,
+    createdAt: Date.now(),
+  }).save();
+
+  const link = `${process.env.CLIENT_URL}/passwordReset?token=${resetToken}&id=${user.userId}`; 
+  sendEmail(
+    user.email,
+    "Bodega Password Reset Request",
+    {
+      link: link,
+    },
+    "./template/requestResetPassword.handlebars"
+  );
+};
+
+export const resetPassword = async (input : ResetPasswordInput) : Promise<void | UserRequestError> => {
+  let passwordResetToken = await TokenModel.findOne({ userId: input.userId });
+  if (!passwordResetToken) {
+    return {
+      appError: "Invalid or expired password reset token.",
+      internalError: "ResetPassword::Invalid or expired password reset token.",
+      errorCode: 400
+    };
+  }
+
+  const isValid = await bcrypt.compare(input.token, passwordResetToken.token);
+  if (!isValid) {
+    return {
+      appError: "Invalid or expired password reset token.",
+      internalError: "ResetPassword::Invalid or expired password reset token.",
+      errorCode: 400,
+    };
+  }
+
+  try {
+    const newHashPass = await passwordService.hashPassword(input.newPassword);
+    await UserModel.updateOne(
+      { _id: input.userId },
+      { $set: { password: newHashPass }},
+      { new: true}
+    );
+  }
+  catch (error) {
+    return {
+      appError: UNEXPECTED_SERVER_ERROR,
+      internalError: `ResetPassword::${error}`,
+      errorCode: 500
+    }
+  }
+}
+
+export const updateUserPassword = async (input : UpdatePasswordInput) : Promise<User | UserRequestError> => {
 
   const userDoc = await UserModel.findById(input.userId);
   if (!userDoc) {
@@ -73,7 +151,7 @@ export const updateUserPassword = async (input : UpdatePasswordInput) : Promise<
   }
 }
 
-export const updateUser = async (input : UpdateUserInformationInput) : Promise<User | Error> => {
+export const updateUser = async (input : UpdateUserInformationInput) : Promise<User | UserRequestError> => {
 
   const userDoc = await UserModel.findById(input.userId);
   if (!userDoc) {
@@ -124,7 +202,7 @@ export const updateUser = async (input : UpdateUserInformationInput) : Promise<U
   }
 }
 
-export const createUser = async (input : CreateUserInput) : Promise<User | Error> =>  {
+export const createUser = async (input : CreateUserInput) : Promise<User | UserRequestError> =>  {
   
   const emailUser = await UserModel.findOne({email: input.email});
   if (emailUser) {
