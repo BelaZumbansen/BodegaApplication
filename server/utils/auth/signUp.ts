@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express'
-import { CreateUserInput, createUser, signToken, Error } from '../../services/user'
-import AppError from '../../services/appError'
+import { CreateUserInput, createUser, signToken } from '../../services/user'
+import { AppError, UserRequestError } from '../../services/appError'
 import { User } from '../../models/user'
 
 // Handle Register Request
@@ -34,7 +34,7 @@ export const registerHandler = async (
         .json({ user: user }); 
       }
       else {
-        const error = createResponse as Error;
+        const error = createResponse as UserRequestError;
         console.log(error.internalError);
         return next(new AppError(error.appError, error.errorCode));
       }

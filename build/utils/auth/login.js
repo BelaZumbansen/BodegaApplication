@@ -8,14 +8,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.loginHandler = exports.logoutHandler = void 0;
 const user_1 = require("../../services/user");
 const password_1 = require("../../services/password");
-const appError_1 = __importDefault(require("../../services/appError"));
+const appError_1 = require("../../services/appError");
 // Handle Logout API Request
 const logoutHandler = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     res.clearCookie('accessToken');
@@ -29,11 +26,16 @@ const loginHandler = (req, res, next) => __awaiter(void 0, void 0, void 0, funct
         // Parse Fields
         const email = req.body.email;
         const password = req.body.password;
-        const user = yield (0, user_1.findUser)(email);
+        if (!email || !password) {
+            return next(new appError_1.AppError('Email or password field undefined.', 400));
+        }
+        const user = yield (0, user_1.findUserByEmail)(email);
+        if (!user) {
+            return next(new appError_1.AppError('Invalid email. No user found.', 400));
+        }
         // Check credentials
-        if (!user ||
-            !(yield (0, password_1.comparePassword)(password, user.hashPass))) {
-            return next(new appError_1.default('Invalid email or password', 401));
+        if (!(yield (0, password_1.comparePassword)(password, user.hashPass))) {
+            return next(new appError_1.AppError('Incorrect password', 401));
         }
         // Generate an Access Token and a Refresh Token
         const { accessToken, refreshToken } = yield (0, user_1.signToken)(user);
@@ -45,7 +47,8 @@ const loginHandler = (req, res, next) => __awaiter(void 0, void 0, void 0, funct
             .json({ user: user });
     }
     catch (err) {
-        next(err);
+        console.log(`RegisterHandler::${err.message}`);
+        next(new appError_1.AppError('Unexpected error while logging in user.', 500));
     }
 });
 exports.loginHandler = loginHandler;

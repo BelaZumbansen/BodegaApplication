@@ -25,3 +25,6 @@ exports.authRoute.get('/api/auth/persistentLogin', (req, res, next) => {
 exports.authRoute.get('/api/auth/refresh', (req, res, next) => {
     (0, refresh_1.refreshHandler)(req, res, next);
 });
+exports.authRoute.post('/api/auth/requestPasswordResetToken', (req, res, next) => {
+    (0, access_1.requestPasswordResetTokenHandler)(req, res, next);
+});

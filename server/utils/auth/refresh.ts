@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express'
-import AppError from '../../services/appError';
-import { findUser } from '../../services/user';
+import { AppError } from '../../services/appError';
+import { findUserByEmail } from '../../services/user';
 import { verifyJwt } from './jwt';
 import jwt from 'jsonwebtoken'
 import { signToken } from '../../services/user';
@@ -38,7 +38,7 @@ export const refreshHandler = async (
         }
 
         // Attempt to retrieve user by email identification
-        const user = await findUser(email);
+        const user = await findUserByEmail(email);
 
         if (!user) {
           return next(new AppError('No User exists for given ID', 401));

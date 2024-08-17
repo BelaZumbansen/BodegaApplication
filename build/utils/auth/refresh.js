@@ -8,12 +8,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.refreshHandler = void 0;
-const appError_1 = __importDefault(require("../../services/appError"));
+const appError_1 = require("../../services/appError");
 const user_1 = require("../../services/user");
 const jwt_1 = require("./jwt");
 const user_2 = require("../../services/user");
@@ -23,13 +20,13 @@ const refreshHandler = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
         // Attempt to parse Refresh Token
         const auth = req.cookies.refreshToken;
         if (!auth) {
-            return next(new appError_1.default('Missing Refresh Token', 401));
+            return next(new appError_1.AppError('Missing Refresh Token', 401));
         }
         // Attempt to verify Refresh Token
         const verify = (0, jwt_1.verifyJwt)('refreshTokenSecretKey', auth);
         // Validate
         if (!verify) {
-            return next(new appError_1.default('Invalid or Expired Refresh Token', 401));
+            return next(new appError_1.AppError('Invalid or Expired Refresh Token', 401));
         }
         else {
             // Parse user Email from Token payload
@@ -37,12 +34,12 @@ const refreshHandler = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
             const email = payload.sub;
             // Validate Payload
             if (!email) {
-                return next(new appError_1.default('Invalid Refresh Token Payload', 401));
+                return next(new appError_1.AppError('Invalid Refresh Token Payload', 401));
             }
             // Attempt to retrieve user by email identification
-            const user = yield (0, user_1.findUser)(email);
+            const user = yield (0, user_1.findUserByEmail)(email);
             if (!user) {
-                return next(new appError_1.default('No User exists for given ID', 401));
+                return next(new appError_1.AppError('No User exists for given ID', 401));
             }
             // Generate a new Access Token and Refresh Token
             const { accessToken, refreshToken } = yield (0, user_2.signToken)(user);

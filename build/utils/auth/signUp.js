@@ -8,37 +8,43 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.registerHandler = void 0;
 const user_1 = require("../../services/user");
-const appError_1 = __importDefault(require("../../services/appError"));
+const appError_1 = require("../../services/appError");
+const user_2 = require("../../models/user");
 // Handle Register Request
 const registerHandler = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        const email = req.body.email;
         // Parse Request Payload
         const createCredentials = {
-            email: req.body.email,
+            email: email,
             password: req.body.password,
+            displayName: req.body.displayName
         };
         // Attempt to create a new User
-        const user = yield (0, user_1.createUser)(createCredentials);
-        if (!user) {
-            return next(new appError_1.default('User with this email already exists.', 401));
+        const createResponse = yield (0, user_1.createUser)(createCredentials);
+        if (createResponse instanceof user_2.User) {
+            const user = createResponse;
+            // Generate an Access Token and Refresh Token for this User Session
+            const { accessToken, refreshToken } = yield (0, user_1.signToken)(user);
+            // Send Response with Tokens
+            res
+                .status(200)
+                .cookie('accessToken', accessToken, { httpOnly: true })
+                .cookie('refreshToken', refreshToken, { httpOnly: true })
+                .json({ user: user });
         }
-        // Generate an Access Token and Refresh Token for this User Session
-        const { accessToken, refreshToken } = yield (0, user_1.signToken)(user);
-        // Send Response with Tokens
-        res
-            .status(200)
-            .cookie('accessToken', accessToken, { httpOnly: true })
-            .cookie('refreshToken', refreshToken, { httpOnly: true })
-            .json({ user: user });
+        else {
+            const error = createResponse;
+            console.log(error.internalError);
+            return next(new appError_1.AppError(error.appError, error.errorCode));
+        }
     }
     catch (err) {
-        next(err);
+        console.log(`RegisterHandler::${err.message}`);
+        next(new appError_1.AppError('Unexpected error while registering new user.', 500));
     }
 });
 exports.registerHandler = registerHandler;

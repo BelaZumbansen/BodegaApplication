@@ -5,10 +5,9 @@ import { TokenModel, IToken } from '../models/token'
 import * as passwordService from './password'
 import { signJwt } from '../utils/auth/jwt'
 import { randomBytes } from 'crypto'
-import { random } from 'nanoid'
 import { hash } from 'bcrypt'
 import { UserRequestError, InternalRequestError } from './appError'
-import { sendEmail } from './email'
+import { sendEmail, resetPasswordEmail } from './email'
 const config = require('../config');
 
 const UNEXPECTED_SERVER_ERROR : string = 'Unexpected server error encountered';
@@ -70,15 +69,29 @@ export const requestPasswordResetToken = async (email : string) : Promise<void |
     createdAt: Date.now(),
   }).save();
 
-  const link = `${process.env.CLIENT_URL}/passwordReset?token=${resetToken}&id=${user.userId}`; 
+  const link = `${process.env.CLIENT_URL}/passwordReset?token=${resetToken}&id=${user.userId}`;
+  const emailHtml = await resetPasswordEmail(email, link);
+  if (!emailHtml) {
+    return {
+      appError: "Could not send email to user.",
+      internalError: "RequestPasswordResetToken::FailedToGenerateHTMLTemplate",
+      errorCode: 500
+    };
+  }
+
   sendEmail(
     user.email,
     "Bodega Password Reset Request",
-    {
-      link: link,
-    },
-    "./template/requestResetPassword.handlebars"
-  );
+    emailHtml
+  ).then(result => {
+    if (result !== undefined) {
+      return {
+        appError: "Could not send email to user.",
+        internalError: "RequestPasswordResetToken::SendEmailFailed",
+        errorCode: 500
+      };
+    }
+  });
 };
 
 export const resetPassword = async (input : ResetPasswordInput) : Promise<void | UserRequestError> => {
@@ -243,7 +256,7 @@ export const createUser = async (input : CreateUserInput) : Promise<User | UserR
 };
 
 export const findUserByEmail = async (email : string) => {
-
+  console.log('Searching database for user with email:', email);
   const userDoc = await UserModel.findOne({ email : email });
   if (!userDoc) {
     return null;

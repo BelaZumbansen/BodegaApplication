@@ -36,8 +36,6 @@ const mongoose_1 = __importDefault(require("mongoose"));
 // Set Up
 dotenv.config();
 const PORT = process.env.PORT || 3001;
-mongoose_1.default.connect((_a = process.env.MONGODB_URI) !== null && _a !== void 0 ? _a : '');
-mongoose_1.default.set('strictQuery', true);
 exports.routes = express_1.default.Router();
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
@@ -45,6 +43,15 @@ app_1.default.use(bodyParser.json());
 app_1.default.use(cookieParser());
 app_1.default.use('/', exports.routes);
 exports.routes.use(authRouter_1.authRoute);
-app_1.default.listen(PORT, () => {
-    console.log(`[server]: Server is running at http://localhost:${PORT}`);
+mongoose_1.default.set('strictQuery', true);
+mongoose_1.default.connect((_a = process.env.MONGODB_URI) !== null && _a !== void 0 ? _a : '')
+    .then(() => {
+    console.log(`Successfully connected to MongoDB ${process.env.MONDOGB_URI}`);
+    app_1.default.listen(PORT, () => {
+        console.log(`[server]: Server is running at http://localhost:${PORT}`);
+    });
+})
+    .catch((error) => {
+    console.log('MongoDB connection error:', error);
+    process.exit(1);
 });

@@ -1,8 +1,40 @@
 import { Request, Response, NextFunction } from 'express'
-import AppError from '../../services/appError';
-import { findUser } from '../../services/user';
+import { AppError } from '../../services/appError';
+import { findUserByEmail, requestPasswordResetToken } from '../../services/user';
+import { TokenModel, IToken } from '../../models/token'
 import { verifyJwt } from './jwt';
 import jwt from 'jsonwebtoken'
+
+export const requestPasswordResetTokenHandler = async (
+  req: Request,
+  res: Response,
+  next: NextFunction) => {
+    try {
+      const email = req.body.email;
+      if (!email) {
+        return next(new AppError('Missing Email', 400));
+      }
+      
+      requestPasswordResetToken(email)
+        .then(result => {
+          if (result === undefined) {
+              console.log("Request Password Reset Token successful for email: ", email);
+              res.status(200).send('Success');
+          } else {
+              // Handle specific error properties
+              console.error(`Error ${result.internalError}`);
+              return next(new AppError(result.appError, result.errorCode));
+          }
+      })
+      .catch(error => {
+        return next(new AppError('Unexpected Error while RequestPasswordResetToken:' + error, 400));
+      });
+    }
+    catch (err:any) {
+      res.status(400);
+      res.json({message: 'Failed'});
+    }
+  }
 
 // Receive a Peristent Login Request
 export const persistentLoginHandler = async (
@@ -31,7 +63,7 @@ export const persistentLoginHandler = async (
           return next(new AppError('Invalid Access Token Payload', 401)); 
         }
 
-        const user = await findUser(email);
+        const user = await findUserByEmail(email);
 
         if (!user) {
           return next(new AppError('No User exists for given ID', 401));
@@ -43,7 +75,7 @@ export const persistentLoginHandler = async (
         });
       }
     } catch (err:any) {
-      res.status(401);
+      res.status(400);
       res.json({message: 'Failed'});
     }
   }
@@ -74,7 +106,7 @@ export const authorizeAPICall = async (
           return next(new AppError('Invalid Access Token Payload', 401)); 
         }
 
-        const user = await findUser(email);
+        const user = await findUserByEmail(email);
 
         if (!user) {
           return next(new AppError('No User exists for given ID', 401));

@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express'
 import { LoginInput, signToken, findUserByEmail } from '../../services/user'
 import { comparePassword } from '../../services/password';
-import AppError from '../../services/appError'
+import { AppError } from '../../services/appError'
 
 // Handle Logout API Request
 export const logoutHandler = async (
@@ -26,6 +26,10 @@ export const loginHandler = async (
     const email = req.body.email;
     const password = req.body.password;
 
+    if (!email || !password) {
+      return next(new AppError('Email or password field undefined.', 400));
+    }
+
     const user = await findUserByEmail(email);
     if (!user) {
       return next(new AppError('Invalid email. No user found.', 400));
@@ -33,7 +37,7 @@ export const loginHandler = async (
 
     // Check credentials
     if (!(await comparePassword(password, user.hashPass))) {
-        return next(new AppError('Invalid email or password', 401));
+        return next(new AppError('Incorrect password', 401));
     }
 
     // Generate an Access Token and a Refresh Token

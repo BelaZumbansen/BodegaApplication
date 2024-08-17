@@ -1,7 +1,7 @@
 import express, { Request, Response, NextFunction } from 'express'
 import { loginHandler, logoutHandler } from '../utils/auth/login';
 import { registerHandler } from '../utils/auth/signUp';
-import { persistentLoginHandler } from '../utils/auth/access';
+import { persistentLoginHandler, requestPasswordResetTokenHandler } from '../utils/auth/access';
 import { refreshHandler } from '../utils/auth/refresh';
 
 export const authRoute = express.Router();
@@ -24,4 +24,8 @@ authRoute.get('/api/auth/persistentLogin', (req: Request, res: Response, next: N
 
 authRoute.get('/api/auth/refresh', (req: Request, res: Response, next: NextFunction) => {
   refreshHandler(req, res, next);
+});
+
+authRoute.post('/api/auth/requestPasswordResetToken', (req: Request, res: Response, next: NextFunction) => {
+  requestPasswordResetTokenHandler(req, res, next);
 });
