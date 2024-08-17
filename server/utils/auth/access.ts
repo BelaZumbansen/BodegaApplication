@@ -1,9 +1,41 @@
 import { Request, Response, NextFunction } from 'express'
 import { AppError } from '../../services/appError';
-import { findUserByEmail, requestPasswordResetToken } from '../../services/user';
+import { findUserByEmail, requestPasswordResetToken, ResetPasswordInput, resetPassword } from '../../services/user';
 import { TokenModel, IToken } from '../../models/token'
 import { verifyJwt } from './jwt';
 import jwt from 'jsonwebtoken'
+
+export const resetPasswordHandler = async (
+  req: Request,
+  res: Response,
+  next: NextFunction) => {
+     try {
+      const input : ResetPasswordInput = {
+        userId: req.body.userId,
+        token: req.body.token,
+        newPassword: req.body.newPassword
+      };
+      
+      resetPassword(input)
+        .then(result => {
+          if (result === undefined) {
+            console.log("Reset Password successful for user: ", input.userId);
+            res.status(200).send('Success');
+          } else {
+              // Handle specific error properties
+              console.error(`Error ${result.internalError}`);
+              return next(new AppError(result.appError, result.errorCode));
+          }
+        })
+        .catch(error => {
+          return next(new AppError('Unexpected Error while RequestPasswordResetToken:' + error, 400));
+        });
+    }
+    catch (err:any) {
+      res.status(400);
+      res.json({message: 'Failed'});
+    }
+  }
 
 export const requestPasswordResetTokenHandler = async (
   req: Request,

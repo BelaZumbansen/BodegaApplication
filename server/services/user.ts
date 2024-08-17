@@ -113,6 +113,7 @@ export const resetPassword = async (input : ResetPasswordInput) : Promise<void |
     };
   }
 
+  passwordResetToken.deleteOne();
   try {
     const newHashPass = await passwordService.hashPassword(input.newPassword);
     await UserModel.updateOne(

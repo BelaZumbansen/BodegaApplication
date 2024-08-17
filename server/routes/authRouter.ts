@@ -1,7 +1,7 @@
 import express, { Request, Response, NextFunction } from 'express'
 import { loginHandler, logoutHandler } from '../utils/auth/login';
 import { registerHandler } from '../utils/auth/signUp';
-import { persistentLoginHandler, requestPasswordResetTokenHandler } from '../utils/auth/access';
+import { persistentLoginHandler, requestPasswordResetTokenHandler, resetPasswordHandler } from '../utils/auth/access';
 import { refreshHandler } from '../utils/auth/refresh';
 
 export const authRoute = express.Router();
@@ -28,4 +28,8 @@ authRoute.get('/api/auth/refresh', (req: Request, res: Response, next: NextFunct
 
 authRoute.post('/api/auth/requestPasswordResetToken', (req: Request, res: Response, next: NextFunction) => {
   requestPasswordResetTokenHandler(req, res, next);
+});
+
+authRoute.post('/api/auth/resetPassword', (req: Request, res: Response, next: NextFunction) => {
+  resetPasswordHandler(req, res, next);
 });

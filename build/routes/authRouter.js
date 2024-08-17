@@ -28,3 +28,6 @@ exports.authRoute.get('/api/auth/refresh', (req, res, next) => {
 exports.authRoute.post('/api/auth/requestPasswordResetToken', (req, res, next) => {
     (0, access_1.requestPasswordResetTokenHandler)(req, res, next);
 });
+exports.authRoute.post('/api/auth/resetPassword', (req, res, next) => {
+    (0, access_1.resetPasswordHandler)(req, res, next);
+});

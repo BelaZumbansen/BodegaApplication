@@ -104,6 +104,7 @@ const resetPassword = (input) => __awaiter(void 0, void 0, void 0, function* () 
             errorCode: 400,
         };
     }
+    passwordResetToken.deleteOne();
     try {
         const newHashPass = yield passwordService.hashPassword(input.newPassword);
         yield user_1.UserModel.updateOne({ _id: input.userId }, { $set: { password: newHashPass } }, { new: true });

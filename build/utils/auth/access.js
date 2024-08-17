@@ -9,10 +9,39 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.authorizeAPICall = exports.persistentLoginHandler = exports.requestPasswordResetTokenHandler = void 0;
+exports.authorizeAPICall = exports.persistentLoginHandler = exports.requestPasswordResetTokenHandler = exports.resetPasswordHandler = void 0;
 const appError_1 = require("../../services/appError");
 const user_1 = require("../../services/user");
 const jwt_1 = require("./jwt");
+const resetPasswordHandler = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const input = {
+            userId: req.body.userId,
+            token: req.body.token,
+            newPassword: req.body.newPassword
+        };
+        (0, user_1.resetPassword)(input)
+            .then(result => {
+            if (result === undefined) {
+                console.log("Reset Password successful for user: ", input.userId);
+                res.status(200).send('Success');
+            }
+            else {
+                // Handle specific error properties
+                console.error(`Error ${result.internalError}`);
+                return next(new appError_1.AppError(result.appError, result.errorCode));
+            }
+        })
+            .catch(error => {
+            return next(new appError_1.AppError('Unexpected Error while RequestPasswordResetToken:' + error, 400));
+        });
+    }
+    catch (err) {
+        res.status(400);
+        res.json({ message: 'Failed' });
+    }
+});
+exports.resetPasswordHandler = resetPasswordHandler;
 const requestPasswordResetTokenHandler = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const email = req.body.email;
